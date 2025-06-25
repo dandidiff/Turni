@@ -182,7 +182,7 @@ if scarica_teams:
     if not (client_id and client_secret and tenant_id):
         st.sidebar.error("Azure credentials (Client ID, Client Secret, Tenant ID) not found. Make sure they are set in the .env file.")
     else:
-        with st.spinner("Downloading data from Teams Shifts for all stores..."):
+        with st.spinner("Downloading data from Teams Shifts for selected stores..."):
             authority = f"https://login.microsoftonline.com/{tenant_id}"
             scope = ["https://graph.microsoft.com/.default"]
             app_auth = msal.ConfidentialClientApplication(
@@ -207,9 +207,11 @@ if scarica_teams:
 
                 negozio_timezones = {}
                 all_shifts = []
-                progress_bar = st.progress(0, text="Download turni in corso...")
+                progress_bar = st.progress(0, text="Downloading shifts...")
 
-                for idx, negozio in enumerate(negozi_lista):
+                # Use only selected stores for download
+                stores_to_download = selected_stores if selected_stores else negozi_lista
+                for idx, negozio in enumerate(stores_to_download):
                     team_id = team_mapping.get(negozio, "")
                     if not team_id:
                         continue
