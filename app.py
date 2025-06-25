@@ -12,9 +12,9 @@ import datetime
 import time
 
 
-st.set_page_config(page_title="Analisi Turnazioni vs Vendite", layout="wide")
+st.set_page_config(page_title="Coverage Tool", layout="wide")
 
-st.title("Analisi Turnazioni vs Vendite")
+st.title("Coverage Tool")
 
 # Carica i dati di vendita storici da file CSV
 sales_df = pd.read_csv('vendite.csv')
@@ -29,7 +29,7 @@ negozi_lista = [
 today = datetime.date.today()
 def_start = today
 def_end = today + datetime.timedelta(days=30)
-st.sidebar.write('Seleziona intervallo date per analisi:')
+st.sidebar.write('Seleziona intervallo date per :')
 date_range = st.sidebar.date_input('Intervallo date', value=(def_start, def_end), min_value=today - datetime.timedelta(days=365), max_value=today + datetime.timedelta(days=365), key='global_date_input')
 if isinstance(date_range, tuple) and len(date_range) == 2:
     filtro_start_date, filtro_end_date = date_range
@@ -103,7 +103,7 @@ def prepare_weekday_week_data(df, date_col):
     df['num_persone'] = 1  # Ogni riga = una persona
     return df
 
-# Funzione di analisi allineata per settimana e giorno della settimana
+# Funzione di  allineata per settimana e giorno della settimana
 def analyze_by_weekday_week(sales_df, schedule_df):
     vendite = prepare_weekday_week_data(sales_df, 'data')
     turni = prepare_weekday_week_data(schedule_df, 'data')
@@ -121,7 +121,7 @@ def analyze_by_weekday_week(sales_df, schedule_df):
     anomalies = merged[abs(merged['vendite_per_persona'] - mean_ratio) > 1.5 * std_ratio]
     return merged, anomalies
 
-# Analisi: confronto turni con media vendite storiche per combinazione (mese, settimana, giorno)
+# : confronto turni con media vendite storiche per combinazione (mese, settimana, giorno)
 def analyze_turni_vs_vendite(sales_df, schedule_df):
     # Prepara turni: una riga per data, con persone programmate
     turni = schedule_df.copy()
