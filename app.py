@@ -39,6 +39,14 @@ else:
     filtro_start_date = def_start
     filtro_end_date = def_end
 
+# Store selection combo box
+selected_stores = st.sidebar.multiselect(
+    'Select stores to analyze:',
+    options=negozi_lista,
+    default=negozi_lista,
+    help='You can select one or more stores.'
+)
+
 # Function to analyze scheduling vs sales
 def analyze_scheduling(sales_df, schedule_df):
     # Add day of week to sales data
@@ -302,9 +310,17 @@ if scarica_teams:
 if 'schedule_df' in st.session_state and not st.session_state['schedule_df'].empty:
     schedule_df = st.session_state['schedule_df']
 
+    # Filter by selected stores
+    if selected_stores:
+        schedule_df = schedule_df[schedule_df['negozio'].isin(selected_stores)]
+        sales_df_filtered = sales_df[sales_df['negozio'].isin(selected_stores)]
+    else:
+        sales_df_filtered = sales_df
+
     coverage_df = None
     if 'df_shifts' in st.session_state:
         df_shifts = st.session_state['df_shifts']
+        df_shifts = df_shifts[df_shifts['negozio'].isin(selected_stores)] if selected_stores else df_shifts
         df_shifts['data_date'] = df_shifts['start'].apply(lambda x: x.date())
         coverage_df = df_shifts.groupby(['negozio', 'data_date']).agg(
             prima_entrata=('start', 'min'),
@@ -313,7 +329,7 @@ if 'schedule_df' in st.session_state and not st.session_state['schedule_df'].emp
 
     st.header('Automatic analysis: Scheduled staff vs Sales per store')
     for negozio in schedule_df['negozio'].unique():
-        vendite_negozio = sales_df[sales_df['negozio'] == negozio].copy()
+        vendite_negozio = sales_df_filtered[sales_df_filtered['negozio'] == negozio].copy()
         if vendite_negozio.empty:
             st.warning(f"No sales data for store {negozio}")
             continue
