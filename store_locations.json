@@ -1,0 +1,21 @@
+{
+    "BHR": {"latitude": 25.888439511823513, "longitude": -80.12438444572344},
+    "MAD": {"latitude": 40.42826, "longitude": -3.687},
+    "BIR": {"latitude": 51.892, "longitude": -1.157},
+    "SRV": {"latitude": 44.736, "longitude": 8.836},
+    "LBM": {"latitude": 48.851, "longitude": 2.324},
+    "PAR": {"latitude": 48.868, "longitude": 2.323},
+    "ROM": {"latitude": 41.906, "longitude": 12.481},
+    "MIL": {"latitude": 45.468, "longitude": 9.195},
+    "ECI": {"latitude": 40.430, "longitude": -3.687},
+    "NBS": {"latitude": 51.511, "longitude": -0.143},
+    "STT": {"latitude": 43.270, "longitude": 6.641},
+    "CAP": {"latitude": 40.550, "longitude": 14.243},
+    "FLO": {"latitude": 43.770, "longitude": 11.248},
+    "NYC": {"latitude": 40.773, "longitude": -73.964},
+    "MAR": {"latitude": 36.490, "longitude": -4.952},
+    "GLA": {"latitude": 0, "longitude": 0},
+    "LRM": {"latitude": 45.465, "longitude": 9.191},
+    "BMP": {"latitude": 40.714, "longitude": -73.723},
+    "CAS": {"latitude": 40.446, "longitude": -3.694}
+} 
