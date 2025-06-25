@@ -7,12 +7,10 @@ import os
 import plotly.graph_objects as go
 import msal
 import requests
-from dotenv import load_dotenv
 import json
 import datetime
 import time
 
-load_dotenv()
 
 st.set_page_config(page_title="Analisi Turnazioni vs Vendite", layout="wide")
 
