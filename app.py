@@ -24,7 +24,7 @@ sales_df['data'] = pd.to_datetime(sales_df['data'], dayfirst=True)
 
 # Store list
 negozi_lista = [
-    "BHR", "MAD", "BIR", "SRV", "LBM", "PAR", "ROM", "MIL", "ECI", "NBS", "STT", "CAP", "FLO", "NYC", "MAR", "GLA", "LRM", "BMP", "CAS"
+    "BHR", "SER", "BIR", "SRV", "LBM", "PAR", "ROM", "MIL", "ECI", "NBS", "STT", "CAP", "FLO", "NYC", "MAR", "GLA", "LRM", "BMP", "CAS"
 ]
 
 # --- GLOBAL FILTERS ALWAYS DEFINED, WITH UNIQUE KEY ---
