@@ -334,8 +334,26 @@ if 'schedule_df' in st.session_state and not st.session_state['schedule_df'].emp
         vendite_negozio = sales_df_filtered[sales_df_filtered['negozio'] == negozio].copy()
         sched_negozio = schedule_df[schedule_df['negozio'] == negozio].copy()
         if vendite_negozio.empty:
-            st.warning(f"No sales data for store {negozio}. Only planning will be shown.")
-            # Show only planning/coverage for this store
+            st.warning(f"No sales data for store {negozio}. Only planning and staff graph will be shown.")
+            # Show only planning/coverage and a staff graph for this store
+            sched_negozio['data_dt'] = pd.to_datetime(sched_negozio['data'])
+            sched_negozio['mese'] = sched_negozio['data_dt'].dt.month
+            sched_negozio['anno'] = sched_negozio['data_dt'].dt.year
+            sched_negozio['giorno_settimana'] = sched_negozio['data_dt'].dt.day_name()
+            sched_negozio['settimana_mese'] = sched_negozio['data_dt'].apply(lambda x: (x.day - 1) // 7 + 1)
+            # Plot only staff planning (num_persone) over time
+            sched_negozio = sched_negozio.sort_values('data_dt')
+            sched_negozio['data_label'] = sched_negozio['data_dt'].dt.strftime('%Y-%m-%d') + ' (' + sched_negozio['giorno_settimana'] + ')'
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=sched_negozio['data_label'], y=sched_negozio['num_persone'], name='Scheduled staff', mode='lines+markers', marker_color='orange'))
+            fig.update_layout(
+                title=f"{negozio}: Scheduled staff (no sales data available)",
+                xaxis_title="Date (Day of week)",
+                yaxis_title="Scheduled staff",
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            )
+            st.plotly_chart(fig)
+            st.dataframe(sched_negozio[['data_label', 'num_persone']].rename(columns={'data_label': 'data'}))
             if coverage_df is not None:
                 st.subheader(f"Hourly Coverage Analysis for {negozio}")
                 negozio_coverage = coverage_df[coverage_df['negozio'] == negozio].copy()
