@@ -332,10 +332,21 @@ if 'schedule_df' in st.session_state and not st.session_state['schedule_df'].emp
     st.header('Automatic analysis: Scheduled staff vs Sales per store')
     for negozio in schedule_df['negozio'].unique():
         vendite_negozio = sales_df_filtered[sales_df_filtered['negozio'] == negozio].copy()
-        if vendite_negozio.empty:
-            st.warning(f"No sales data for store {negozio}")
-            continue
         sched_negozio = schedule_df[schedule_df['negozio'] == negozio].copy()
+        if vendite_negozio.empty:
+            st.warning(f"No sales data for store {negozio}. Only planning will be shown.")
+            # Show only planning/coverage for this store
+            if coverage_df is not None:
+                st.subheader(f"Hourly Coverage Analysis for {negozio}")
+                negozio_coverage = coverage_df[coverage_df['negozio'] == negozio].copy()
+                if not negozio_coverage.empty:
+                    negozio_coverage['prima_entrata'] = pd.to_datetime(negozio_coverage['prima_entrata']).dt.strftime('%H:%M')
+                    negozio_coverage['ultima_uscita'] = pd.to_datetime(negozio_coverage['ultima_uscita']).dt.strftime('%H:%M')
+                    negozio_coverage.rename(columns={'data_date': 'data'}, inplace=True)
+                    st.dataframe(negozio_coverage[['data', 'prima_entrata', 'ultima_uscita']])
+                else:
+                    st.write("No hourly coverage data available for this store.")
+            continue
         # Calcola mese, settimana del mese, giorno della settimana per turnazioni (2025)
         sched_negozio['data_dt'] = pd.to_datetime(sched_negozio['data'])
         sched_negozio['mese'] = sched_negozio['data_dt'].dt.month
