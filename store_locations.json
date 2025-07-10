@@ -17,5 +17,6 @@
     "GLA": {"latitude": 0, "longitude": 0},
     "LRM": {"latitude": 45.465, "longitude": 9.191},
     "BMP": {"latitude": 40.714, "longitude": -73.723},
-    "CAS": {"latitude": 40.446, "longitude": -3.694}
+    "CAS": {"latitude": 40.446, "longitude": -3.694},
+    "SER": {"latitude": 40.430, "longitude": -3.687}
 } 
