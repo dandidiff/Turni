@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 from datetime import datetime
 import numpy as np
 import os
@@ -18,19 +19,8 @@ st.set_page_config(page_title="Coverage Tool", layout="wide")
 st.title("Coverage Tool")
 
 # Load historical sales data from CSV file
-try:
-    sales_df = pd.read_csv('vendite.csv')
-except FileNotFoundError:
-    st.sidebar.error("Missing file 'vendite.csv'. Place it in the app folder.")
-    st.stop()
-except Exception as e:
-    st.sidebar.error(f"Error reading 'vendite.csv': {e}")
-    st.stop()
-
-sales_df['data'] = pd.to_datetime(sales_df['data'], dayfirst=True, errors='coerce')
-if sales_df['data'].isna().all():
-    st.sidebar.error("Column 'data' could not be parsed as dates in 'vendite.csv'.")
-    st.stop()
+sales_df = pd.read_csv('vendite.csv')
+sales_df['data'] = pd.to_datetime(sales_df['data'], dayfirst=True)
 
 # Store list
 negozi_lista = [
@@ -355,25 +345,23 @@ if 'schedule_df' in st.session_state and not st.session_state['schedule_df'].emp
             sched_negozio = sched_negozio.sort_values('data_dt')
             sched_negozio['data_label'] = sched_negozio['data_dt'].dt.strftime('%Y-%m-%d') + ' (' + sched_negozio['giorno_settimana'] + ')'
             fig = go.Figure()
-            fig.add_trace(go.Scatter(x=sched_negozio['data_label'], y=sched_negozio['num_persone'], name='Scheduled staff', mode='lines+markers', marker_color='orange', hovertemplate='%{x}<br>Staff: %{y}<extra></extra>'))
+            fig.add_trace(go.Scatter(x=sched_negozio['data_label'], y=sched_negozio['num_persone'], name='Scheduled staff', mode='lines+markers', marker_color='orange'))
             fig.update_layout(
-                title=f"{negozio} — Scheduled staff (no sales data)",
-                xaxis_title="Date (day of week)",
+                title=f"{negozio}: Scheduled staff (no sales data available)",
+                xaxis_title="Date (Day of week)",
                 yaxis_title="Scheduled staff",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
-            st.plotly_chart(fig, use_container_width=True)
-            with st.expander("Details (advanced)"):
-                st.dataframe(sched_negozio[['data_label', 'num_persone']].rename(columns={'data_label': 'data', 'num_persone': 'scheduled_staff'}))
+            st.plotly_chart(fig)
+            st.dataframe(sched_negozio[['data_label', 'num_persone']].rename(columns={'data_label': 'data'}))
             if coverage_df is not None:
-                st.subheader(f"{negozio} — Opening/closing coverage")
+                st.subheader(f"Hourly Coverage Analysis for {negozio}")
                 negozio_coverage = coverage_df[coverage_df['negozio'] == negozio].copy()
                 if not negozio_coverage.empty:
                     negozio_coverage['prima_entrata'] = pd.to_datetime(negozio_coverage['prima_entrata']).dt.strftime('%H:%M')
                     negozio_coverage['ultima_uscita'] = pd.to_datetime(negozio_coverage['ultima_uscita']).dt.strftime('%H:%M')
                     negozio_coverage.rename(columns={'data_date': 'data'}, inplace=True)
-                    with st.expander("Daily opening/closing times"):
-                        st.dataframe(negozio_coverage[['data', 'prima_entrata', 'ultima_uscita']].rename(columns={'prima_entrata': 'first_in', 'ultima_uscita': 'last_out'}))
+                    st.dataframe(negozio_coverage[['data', 'prima_entrata', 'ultima_uscita']])
                 else:
                     st.write("No hourly coverage data available for this store.")
             continue
@@ -470,27 +458,12 @@ if 'schedule_df' in st.session_state and not st.session_state['schedule_df'].emp
         else:
             attenzione_idx = []
 
-        result = result.sort_values('data_dt')
         result['vendite_per_persona'] = result['vendite'] / result['num_persone']
 
-        # KPIs row
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Avg expected sales", f"{result['vendite'].mean():.0f}")
-        with col2:
-            st.metric("Avg scheduled staff", f"{result['num_persone'].mean():.1f}")
-        with col3:
-            st.metric("Sales per staff", f"{result['vendite_per_persona'].mean():.0f}")
-        with col4:
-            st.metric("Attention points", f"{len(attenzione_idx)}")
-
-        st.subheader(f"{negozio} — Staffing vs expected sales")
+        st.subheader(f"{negozio}: Scheduled staff and average historical sales per combination")
         result['data_label'] = result['data_dt'].dt.strftime('%Y-%m-%d') + ' (' + result['giorno_settimana'] + ')'
         fig = go.Figure()
-        fig.add_trace(go.Bar(
-            x=result['data_label'], y=result['vendite'], name='Expected sales (hist. 2024)', marker_color='#1f77b4',
-            hovertemplate='%{x}<br>Expected sales: %{y:.0f}<extra></extra>'
-        ))
+        fig.add_trace(go.Bar(x=result['data_label'], y=result['vendite'], name='Average historical sales 2024', marker_color='blue'))
 
         if 'meteo' in result.columns and not result['meteo'].isnull().all():
              fig.add_trace(go.Scatter(
@@ -503,40 +476,34 @@ if 'schedule_df' in st.session_state and not st.session_state['schedule_df'].emp
                  showlegend=False
             ))
             
-        fig.add_trace(go.Scatter(
-            x=result['data_label'], y=result['num_persone'], name='Scheduled staff (2025)', mode='lines+markers', marker_color='#ff7f0e', yaxis='y2',
-            hovertemplate='%{x}<br>Staff: %{y:.0f}<extra></extra>'
-        ))
+        fig.add_trace(go.Scatter(x=result['data_label'], y=result['num_persone'], name='Scheduled staff 2025', mode='lines+markers', marker_color='orange', yaxis='y2'))
         if attenzione_idx:
             fig.add_trace(go.Scatter(
                 x=result.loc[attenzione_idx, 'data_label'],
                 y=result.loc[attenzione_idx, 'num_persone'],
                 mode='markers',
-                marker=dict(color='red', size=12, symbol='star'),
+                marker=dict(color='red', size=14, symbol='star'),
                 name='Attention point',
                 yaxis='y2',
                 showlegend=True
             ))
         fig.update_layout(
-            title=f"{negozio}: Staffing vs expected sales",
-            xaxis_title="Date (day of week)",
-            yaxis_title="Expected sales (2024)",
-            yaxis2=dict(title="Scheduled staff (2025)", overlaying='y', side='right', tickformat=',d', dtick=1),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            margin=dict(l=40, r=40, t=60, b=40)
+            title=f"{negozio}: Scheduled staff and average historical sales per combination",
+            xaxis_title="Date (Day of week)",
+            yaxis_title="Average historical sales 2024",
+            yaxis2=dict(title="Scheduled staff 2025", overlaying='y', side='right', tickformat=',d', dtick=1),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
-        st.plotly_chart(fig, use_container_width=True)
-        with st.expander("Details (advanced)"):
-            st.dataframe(result)
+        st.plotly_chart(fig)
+        st.dataframe(result)
 
         if coverage_df is not None:
-            st.subheader(f"{negozio} — Opening/closing coverage")
+            st.subheader(f"Hourly Coverage Analysis for {negozio}")
             negozio_coverage = coverage_df[coverage_df['negozio'] == negozio].copy()
             if not negozio_coverage.empty:
                 negozio_coverage['prima_entrata'] = pd.to_datetime(negozio_coverage['prima_entrata']).dt.strftime('%H:%M')
                 negozio_coverage['ultima_uscita'] = pd.to_datetime(negozio_coverage['ultima_uscita']).dt.strftime('%H:%M')
                 negozio_coverage.rename(columns={'data_date': 'data'}, inplace=True)
-                with st.expander("Daily opening/closing times"):
-                    st.dataframe(negozio_coverage[['data', 'prima_entrata', 'ultima_uscita']].rename(columns={'prima_entrata': 'first_in', 'ultima_uscita': 'last_out'}))
+                st.dataframe(negozio_coverage[['data', 'prima_entrata', 'ultima_uscita']])
             else:
                 st.write("No hourly coverage data available for this store.")
