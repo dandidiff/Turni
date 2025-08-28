@@ -187,11 +187,19 @@ st.sidebar.header("Download shifts from Teams Shifts (Microsoft Graph API)")
 client_id = os.getenv("AZURE_CLIENT_ID")
 client_secret = os.getenv("AZURE_CLIENT_SECRET")
 tenant_id = os.getenv("AZURE_TENANT_ID")
+
+# Se le credenziali non sono presenti, chiedile all'utente
+if not (client_id and client_secret and tenant_id):
+    st.sidebar.warning("Azure credentials (Client ID, Client Secret, Tenant ID) not found in .env. Please provide them below.")
+    client_id = st.sidebar.text_input("Azure Client ID", value=client_id or "", type="default")
+    client_secret = st.sidebar.text_input("Azure Client Secret", value=client_secret or "", type="password")
+    tenant_id = st.sidebar.text_input("Azure Tenant ID", value=tenant_id or "", type="default")
+
 scarica_teams = st.sidebar.button("Download shifts from Teams for all stores")
 
 if scarica_teams:
     if not (client_id and client_secret and tenant_id):
-        st.sidebar.error("Azure credentials (Client ID, Client Secret, Tenant ID) not found. Make sure they are set in the .env file.")
+        st.sidebar.error("Azure credentials (Client ID, Client Secret, Tenant ID) are required.")
     else:
         with st.spinner("Downloading data from Teams Shifts for selected stores..."):
             authority = f"https://login.microsoftonline.com/{tenant_id}"
@@ -316,8 +324,8 @@ if scarica_teams:
                         st.session_state['schedule_df'] = schedule_df.copy()
                         st.header('Automatic analysis: Scheduled staff vs Sales per store')
                         st.success("Shift data downloaded successfully!")
-                        st.write("Preview of downloaded data:")
-                        st.dataframe(df_shifts.head(20))
+                        with st.expander("Preview of downloaded data", expanded=False):
+                            st.dataframe(df_shifts.head(20))
 
 # --- Analisi e grafici sempre disponibili se i dati sono in session_state ---
 if 'schedule_df' in st.session_state and not st.session_state['schedule_df'].empty:
