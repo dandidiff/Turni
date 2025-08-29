@@ -179,11 +179,11 @@ sales_df['data'] = pd.to_datetime(sales_df['data'], errors='coerce').dt.strftime
 st.sidebar.header("Instructions")
 st.sidebar.markdown("""
 1. Set the desired date range for the analysis (default is today to 30 days ahead).
-2. Click 'Download shifts from Teams for all stores'.
+2. Click 'Launch'.
 3. The application will download the data, perform the analysis, and display the results for all stores.
 """)
 
-st.sidebar.header("Download shifts from Teams Shifts (Microsoft Graph API)")
+st.sidebar.header("")
 client_id = os.getenv("AZURE_CLIENT_ID")
 client_secret = os.getenv("AZURE_CLIENT_SECRET")
 tenant_id = os.getenv("AZURE_TENANT_ID")
