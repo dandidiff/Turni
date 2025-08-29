@@ -16,7 +16,7 @@ load_dotenv()
 
 st.set_page_config(page_title="Coverage Tool", layout="wide")
 
-st.title("Coverage Tool")
+st.title("AQ Retail Coverage Tool")
 
 # Load historical sales data from CSV file
 try:
@@ -42,7 +42,7 @@ negozi_lista = [
 today = datetime.date.today()
 def_start = today
 def_end = today + datetime.timedelta(days=30)
-st.sidebar.write('Select date range for analysis:')
+st.sidebar.write('Select date range and stores to analyze:')
 date_range = st.sidebar.date_input('Date range', value=(def_start, def_end), min_value=today - datetime.timedelta(days=365), max_value=today + datetime.timedelta(days=365), key='global_date_input')
 if isinstance(date_range, tuple) and len(date_range) == 2:
     filtro_start_date, filtro_end_date = date_range
@@ -195,7 +195,7 @@ if not (client_id and client_secret and tenant_id):
     client_secret = st.sidebar.text_input("Azure Client Secret", value=client_secret or "", type="password")
     tenant_id = st.sidebar.text_input("Azure Tenant ID", value=tenant_id or "", type="default")
 
-scarica_teams = st.sidebar.button("Download shifts from Teams for all stores")
+scarica_teams = st.sidebar.button("Launch")
 
 if scarica_teams:
     if not (client_id and client_secret and tenant_id):
@@ -322,7 +322,7 @@ if scarica_teams:
                         schedule_df['data'] = schedule_df['data'].astype(str)
                         st.session_state['df_shifts'] = df_shifts.copy()
                         st.session_state['schedule_df'] = schedule_df.copy()
-                        st.header('Automatic analysis: Scheduled staff vs Sales per store')
+                        st.header('Scheduled staff vs Sales per store')
                         st.success("Shift data downloaded successfully!")
                         with st.expander("Preview of downloaded data", expanded=False):
                             st.dataframe(df_shifts.head(20))
@@ -348,7 +348,7 @@ if 'schedule_df' in st.session_state and not st.session_state['schedule_df'].emp
             ultima_uscita=('end', 'max')
         ).reset_index()
 
-    st.header('Automatic analysis: Scheduled staff vs Sales per store')
+    st.header('Scheduled staff vs Sales per store')
     for negozio in schedule_df['negozio'].unique():
         vendite_negozio = sales_df_filtered[sales_df_filtered['negozio'] == negozio].copy()
         sched_negozio = schedule_df[schedule_df['negozio'] == negozio].copy()
