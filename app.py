@@ -179,8 +179,9 @@ sales_df['data'] = pd.to_datetime(sales_df['data'], errors='coerce').dt.strftime
 st.sidebar.header("Instructions")
 st.sidebar.markdown("""
 1. Set the desired date range for the analysis (default is today to 30 days ahead).
-2. Click 'Launch'.
-3. The application will download the data, perform the analysis, and display the results for all stores.
+2. Select the stores to analize.
+3. Click 'Launch'.
+4. The application will download the data, perform the analysis, and display the results for all stores.
 """)
 
 st.sidebar.header("")
